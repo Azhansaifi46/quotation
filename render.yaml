@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sun-bright-solar-quotation
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false # Set your MongoDB Atlas URI in Render Dashboard (e.g. mongodb+srv://username:password@cluster.mongodb.net/qoutpro)

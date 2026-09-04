@@ -1,0 +1,15 @@
+{
+  "name": "qoutpro",
+  "version": "1.0.0",
+  "description": "Full-stack Quotation, Invoicing & Billing Web Application",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "build": "npm run build --prefix frontend",
+    "start": "node backend/src/server.js",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend"
+  }
+}
+

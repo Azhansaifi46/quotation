@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-purple: #7c3aed;
+  --sidebar-navy: #0f172a;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure no text is clipped anywhere */
+.full-text-wrap {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+}
+
+/* Auto-expanding textarea styling */
+textarea.auto-expand {
+  resize: vertical;
+  min-height: 40px;
+  line-height: 1.4;
+  overflow-y: hidden;
+}
+
+/* Custom sleek scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* A4 Print & PDF Preview Styles */
+@media print {
+  body {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .a4-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 12mm 15mm !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    page-break-after: always;
+  }
+}
+
+.a4-sheet {
+  width: 100%;
+  max-width: 800px;
+  min-height: 1120px;
+  background: white;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
