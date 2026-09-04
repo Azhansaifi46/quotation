@@ -196,7 +196,11 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
     const inWords = numberToWordsIndian(computed.grandTotal);
 
     if (!hasCustomTaxRows) {
-      setTaxRows(computed.taxRows);
+      setTaxRows((previousRows) =>
+        JSON.stringify(previousRows) === JSON.stringify(computed.taxRows)
+          ? previousRows
+          : computed.taxRows,
+      );
     }
 
     setSummary({
