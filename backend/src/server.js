@@ -137,9 +137,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve Frontend in Production
+// Serve Frontend in Production with caching
 const frontendDist = path.join(__dirname, '../../frontend/dist');
-app.use(express.static(frontendDist));
+app.use(
+  express.static(frontendDist, {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+    etag: true,
+  })
+);
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
@@ -157,13 +162,17 @@ app.get('*', (req, res, next) => {
 // Database connection with In-Memory fallback for 100% resilience
 async function connectDatabase() {
   const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/qoutpro';
+  const isCloudUri = uri.includes('mongodb+srv://') || uri.includes('mongodb.net');
+  const timeoutMs = isCloudUri || process.env.NODE_ENV === 'production' ? 10000 : 3000;
+
   try {
-    console.log(`⏳ Connecting to MongoDB at: ${uri}`);
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
+    const maskedUri = uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@');
+    console.log(`⏳ Connecting to MongoDB (${maskedUri})...`);
+    await mongoose.connect(uri, { serverSelectionTimeoutMS: timeoutMs });
     console.log('✅ Connected to MongoDB server successfully.');
   } catch (err) {
     console.warn(
-      '⚠️ Local MongoDB server not reachable. Starting embedded in-memory MongoDB engine...'
+      `⚠️ Primary MongoDB connection failed (${err.message}). Starting embedded in-memory MongoDB engine...`
     );
     try {
       const mongod = await MongoMemoryServer.create();
@@ -178,10 +187,29 @@ async function connectDatabase() {
 }
 
 // Start Server
+let server;
 connectDatabase().then(() => {
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(
-      `🚀 BillPro Multi-Business SaaS (Production Secured) running on http://localhost:${PORT}`
+      `🚀 BillPro Multi-Business SaaS running in [${process.env.NODE_ENV || 'production'}] on port ${PORT}`
     );
   });
 });
+
+// Graceful shutdown handling for cloud containers
+const handleShutdown = (signal) => {
+  console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
+  if (server) {
+    server.close(async () => {
+      console.log('🔌 HTTP server closed.');
+      await mongoose.connection.close();
+      console.log('📦 MongoDB connection closed. Exiting process.');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+};
+
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));

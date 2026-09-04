@@ -4,6 +4,8 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const escapeRegex = (str) => (str ? str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '');
+
 // Protect all customer routes
 router.use(protect);
 
@@ -13,15 +15,16 @@ router.get('/', async (req, res) => {
     const { search } = req.query;
     let query = { userId: req.user._id };
 
-    if (search) {
+    if (search && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       query.$and = [
         { userId: req.user._id },
         {
           $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { mobile: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-            { billingAddress: { $regex: search, $options: 'i' } },
+            { name: { $regex: safeSearch, $options: 'i' } },
+            { mobile: { $regex: safeSearch, $options: 'i' } },
+            { email: { $regex: safeSearch, $options: 'i' } },
+            { billingAddress: { $regex: safeSearch, $options: 'i' } },
           ],
         },
       ];

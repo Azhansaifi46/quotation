@@ -1,14 +1,23 @@
 services:
   - type: web
-    name: sun-bright-solar-quotation
-    env: node
+    name: qoutpro-saas
+    runtime: node
     plan: free
-    buildCommand: npm run install:all && npm run build
+    region: oregon
+    buildCommand: npm run build
     startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        sync: false # Set your MongoDB Atlas URI in Render Dashboard (e.g. mongodb+srv://username:password@cluster.mongodb.net/qoutpro)
+        sync: false # Set in Render Dashboard: e.g. mongodb+srv://admin:pass@cluster.mongodb.net/qoutpro?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OTP_SECRET
+        generateValue: true
+      - key: APP_NAME
+        value: BillPro SaaS

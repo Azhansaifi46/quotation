@@ -4,6 +4,8 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const escapeRegex = (str) => (str ? str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '');
+
 // Protect all product catalog routes
 router.use(protect);
 
@@ -13,16 +15,17 @@ router.get('/', async (req, res) => {
     const { search, category, type } = req.query;
     let query = { userId: req.user._id };
 
-    if (search) {
+    if (search && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       query.$and = [
         { userId: req.user._id },
         {
           $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { hsnSac: { $regex: search, $options: 'i' } },
-            { sku: { $regex: search, $options: 'i' } },
-            { category: { $regex: search, $options: 'i' } },
+            { name: { $regex: safeSearch, $options: 'i' } },
+            { description: { $regex: safeSearch, $options: 'i' } },
+            { hsnSac: { $regex: safeSearch, $options: 'i' } },
+            { sku: { $regex: safeSearch, $options: 'i' } },
+            { category: { $regex: safeSearch, $options: 'i' } },
           ],
         },
       ];
