@@ -182,11 +182,15 @@ export default function TemplateEmerald({
             <div>Bank: <span className="font-semibold text-slate-900">{paymentInfo.bankName || company.bankName || '--'}</span></div>
             <div>A/C No: <span className="font-mono font-semibold text-slate-900">{paymentInfo.accountNumber || company.accountNumber || '--'}</span></div>
             <div>IFSC: <span className="font-mono font-semibold text-slate-900">{paymentInfo.ifscCode || company.ifscCode || '--'}</span></div>
-            {paymentInfo.upiId && <div>UPI ID: <span className="font-mono text-emerald-800 font-semibold">{paymentInfo.upiId}</span></div>}
           </div>
           {qrSrc && (
             <div className="text-center shrink-0">
               <img src={qrSrc} alt="UPI QR" className="w-16 h-16 rounded border border-slate-300 bg-white p-1" style={{ width: '65px', height: '65px' }} />
+              {(paymentInfo.upiId || company.upiId) && (
+                <div className="mt-1 max-w-24 text-[9px] leading-tight text-slate-600 break-all">
+                  UPI: <span className="font-mono font-semibold text-emerald-800">{paymentInfo.upiId || company.upiId}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

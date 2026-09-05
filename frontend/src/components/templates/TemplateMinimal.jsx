@@ -184,8 +184,19 @@ export default function TemplateMinimal({
           <div>Bank: <span className="font-medium">{paymentInfo.bankName || company.bankName || '--'}</span></div>
           <div>A/C: <span className="font-mono font-medium">{paymentInfo.accountNumber || company.accountNumber || '--'}</span></div>
           <div>IFSC: <span className="font-mono font-medium">{paymentInfo.ifscCode || company.ifscCode || '--'}</span></div>
-          {paymentInfo.upiId && <div>UPI: <span className="font-mono font-medium">{paymentInfo.upiId}</span></div>}
         </div>
+
+        {(qrSrc || paymentInfo.upiId || company.upiId) && (
+          <div className="text-center flex flex-col items-center">
+            <span className="text-[10px] uppercase text-neutral-500 mb-1">UPI QR</span>
+            {qrSrc && <img src={qrSrc} alt="UPI QR" className="w-16 h-16 rounded border border-neutral-300 bg-white p-1 object-contain" />}
+            {(paymentInfo.upiId || company.upiId) && (
+              <div className="mt-1 max-w-28 text-[9px] leading-tight text-neutral-600 break-all">
+                UPI: <span className="font-mono font-medium">{paymentInfo.upiId || company.upiId}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="text-right space-y-1">
           <div className="text-[10px] uppercase text-neutral-500">Authorized Signature</div>

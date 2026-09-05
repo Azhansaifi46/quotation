@@ -39,13 +39,14 @@ export default function QuotationPreview({
 
   const paymentInfo = quotationData.paymentInfo || {};
   const grandTotal = quotationData.summary?.grandTotal || 0;
+  const upiId = paymentInfo.upiId || company?.upiId || '';
 
   // Generate UPI QR Code
   useEffect(() => {
     if (paymentInfo?.upiQrCode) {
       setQrSrc(paymentInfo.upiQrCode);
-    } else if (paymentInfo?.upiId) {
-      const upiUrl = `upi://pay?pa=${encodeURIComponent(paymentInfo.upiId)}&pn=${encodeURIComponent(
+    } else if (upiId) {
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
         company?.name || 'Business'
       )}&cu=INR${grandTotal > 0 ? `&am=${grandTotal}` : ''}`;
 
@@ -55,7 +56,7 @@ export default function QuotationPreview({
     } else {
       setQrSrc('');
     }
-  }, [paymentInfo, company.name, grandTotal]);
+  }, [paymentInfo, company.name, company.upiId, grandTotal, upiId]);
 
   const renderTemplate = () => {
     switch (templateId) {

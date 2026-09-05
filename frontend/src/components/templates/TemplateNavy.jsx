@@ -321,11 +321,6 @@ export default function TemplateNavy({
               <span className="col-span-1">:</span>
               <span className="col-span-6 text-slate-800">{paymentInfo.branch || company.branch || '--'}</span>
             </div>
-            <div className="grid grid-cols-12 gap-1">
-              <span className="col-span-5 text-slate-500 font-medium">UPI ID</span>
-              <span className="col-span-1">:</span>
-              <span className="col-span-6 font-mono font-semibold text-purple-900">{paymentInfo.upiId || company.upiId || '--'}</span>
-            </div>
           </div>
 
           {/* UPI QR Code Container */}
@@ -340,6 +335,11 @@ export default function TemplateNavy({
                 <span className="text-slate-400 text-xs font-mono">--</span>
               )}
             </div>
+            {(paymentInfo.upiId || company.upiId) && (
+              <div className="mt-1 max-w-32 text-[9px] leading-tight text-slate-600 break-all">
+                UPI: <span className="font-mono font-semibold text-purple-900">{paymentInfo.upiId || company.upiId}</span>
+              </div>
+            )}
           </div>
         </div>
 
