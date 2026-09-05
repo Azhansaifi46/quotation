@@ -114,6 +114,21 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     .overflow-hidden {
       overflow: visible !important;
     }
+    .quotation-items-table {
+      overflow: visible !important;
+      max-width: none !important;
+    }
+    .quotation-items-table > table,
+    table.quotation-items-table {
+      min-width: 0 !important;
+    }
+    .gst-summary-table {
+      overflow: visible !important;
+      max-width: none !important;
+    }
+    .gst-summary-table table {
+      min-width: 0 !important;
+    }
   `;
   printWrapper.appendChild(styleTag);
   printWrapper.appendChild(clone);

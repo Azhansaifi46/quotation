@@ -159,7 +159,7 @@ export default function TemplateNavy({
         </div>
 
         {/* 3. Items Table */}
-        <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+        <div className="quotation-items-table border border-slate-200 rounded-lg overflow-x-auto overflow-y-visible bg-white">
           <table className="w-full border-collapse text-left text-[11px]" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-[10px]">

@@ -103,7 +103,7 @@ export default function QuotationPreview({
     <div className="w-full flex justify-center py-2 px-1 print:p-0">
       <div
         id={previewId}
-        className="w-full max-w-[800px] min-h-[1130px] bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden font-sans print:shadow-none print:border-none print:rounded-none transition-all duration-300"
+        className="quotation-preview-document w-full max-w-[800px] min-h-[1130px] bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-visible font-sans print:shadow-none print:border-none print:rounded-none transition-all duration-300"
         style={{
           boxSizing: 'border-box',
         }}

@@ -78,7 +78,7 @@ export default function TemplateEmerald({
       </div>
 
       {/* 3. Items Table */}
-      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+      <div className="quotation-items-table border border-slate-200 rounded-xl overflow-x-auto overflow-y-visible bg-white">
         <table className="w-full border-collapse text-left text-[11px]" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="bg-emerald-50 text-emerald-950 font-bold border-b border-emerald-200 text-[10px]">

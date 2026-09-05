@@ -85,6 +85,7 @@ export default function TemplateMinimal({
       </div>
 
       {/* 3. Items Table */}
+      <div className="quotation-items-table overflow-x-auto overflow-y-visible">
       <table className="w-full border-collapse text-left text-[11px] border-t border-b border-black" style={{ tableLayout: 'fixed' }}>
         <thead>
           <tr className="border-b border-black font-bold uppercase text-[10px] text-neutral-800">
@@ -129,6 +130,7 @@ export default function TemplateMinimal({
           )}
         </tbody>
       </table>
+      </div>
 
       {/* 4. Totals & Tax Rows */}
       <div className="grid grid-cols-12 gap-6 items-start no-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>

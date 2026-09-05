@@ -34,29 +34,29 @@ export default function GstSummaryTable({
       </h4>
 
       {/* Table Container */}
-      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+      <div className="gst-summary-table border border-slate-200 rounded-xl overflow-x-auto overflow-y-visible bg-white shadow-2xs">
         <table className="w-full border-collapse text-left text-[11px]" style={{ tableLayout: 'fixed' }}>
           <thead>
             {/* Header Tier 1: Main Categories */}
             <tr className="bg-[#F1F4F9] text-slate-800 font-bold border-b border-slate-200">
-              <th rowSpan={2} style={{ width: '16%' }} className="py-2 px-3 text-center align-middle font-bold text-[10px]">
+              <th rowSpan={2} style={{ width: '14%' }} className="py-2 px-3 text-center align-middle font-bold text-[10px]">
                 HSN / SAC
               </th>
-              <th rowSpan={2} style={{ width: '22%' }} className="py-2 px-3 text-right align-middle font-bold text-[10px]">
+              <th rowSpan={2} style={{ width: '20%' }} className="py-2 px-3 text-right align-middle font-bold text-[10px]">
                 Taxable Value
               </th>
               {!isInterState ? (
                 <>
                   <th
                     colSpan={2}
-                    style={{ width: '26%' }}
+                    style={{ width: '25%' }}
                     className="py-1.5 px-2 text-center text-slate-800 font-bold border-l border-r border-slate-200"
                   >
                     Central Tax
                   </th>
                   <th
                     colSpan={2}
-                    style={{ width: '26%' }}
+                    style={{ width: '25%' }}
                     className="py-1.5 px-2 text-center text-slate-800 font-bold border-r border-slate-200"
                   >
                     State Tax
@@ -65,13 +65,13 @@ export default function GstSummaryTable({
               ) : (
                 <th
                   colSpan={2}
-                  style={{ width: '42%' }}
+                  style={{ width: '50%' }}
                   className="py-1.5 px-2 text-center text-slate-800 font-bold border-l border-r border-slate-200"
                 >
                   Integrated Tax
                 </th>
               )}
-              <th rowSpan={2} style={{ width: '10%' }} className="py-2 px-3 text-right align-middle font-bold text-[10px]">
+              <th rowSpan={2} style={{ width: '16%' }} className="py-2 px-3 text-right align-middle font-bold text-[10px]">
                 Total Tax
               </th>
             </tr>
@@ -83,22 +83,22 @@ export default function GstSummaryTable({
                   <th style={{ width: '10%' }} className="py-1.5 px-2 text-center border-l border-slate-200">
                     Rate
                   </th>
-                  <th style={{ width: '16%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
+                  <th style={{ width: '15%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
                     Amount
                   </th>
                   <th style={{ width: '10%' }} className="py-1.5 px-2 text-center">
                     Rate
                   </th>
-                  <th style={{ width: '16%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
+                  <th style={{ width: '15%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
                     Amount
                   </th>
                 </>
               ) : (
                 <>
-                  <th style={{ width: '16%' }} className="py-1.5 px-2 text-center border-l border-slate-200">
+                  <th style={{ width: '20%' }} className="py-1.5 px-2 text-center border-l border-slate-200">
                     Rate
                   </th>
-                  <th style={{ width: '26%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
+                  <th style={{ width: '30%' }} className="py-1.5 px-2.5 text-right border-r border-slate-200">
                     Amount
                   </th>
                 </>
