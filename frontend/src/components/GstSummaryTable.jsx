@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumberOnly } from '../utils/numberToWords';
+import { formatMoney } from '../utils/numberToWords';
 
 /**
  * Pixel-Perfect Professional GST Summary Table
@@ -116,7 +116,7 @@ export default function GstSummaryTable({
 
                 {/* Taxable Value */}
                 <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
-                  {formatNumberOnly(g.taxableValue)}
+                  {formatMoney(g.taxableValue)}
                 </td>
 
                 {/* Central Tax / Integrated Tax */}
@@ -126,13 +126,13 @@ export default function GstSummaryTable({
                       {g.cgstRate}%
                     </td>
                     <td className="py-2.5 px-2.5 text-right font-mono text-slate-900 border-r border-slate-100">
-                      {formatNumberOnly(g.cgstAmount)}
+                      {formatMoney(g.cgstAmount)}
                     </td>
                     <td className="py-2.5 px-2 text-center text-slate-700 font-medium">
                       {g.sgstRate}%
                     </td>
                     <td className="py-2.5 px-2.5 text-right font-mono text-slate-900 border-r border-slate-100">
-                      {formatNumberOnly(g.sgstAmount)}
+                      {formatMoney(g.sgstAmount)}
                     </td>
                   </>
                 ) : (
@@ -141,14 +141,14 @@ export default function GstSummaryTable({
                       {g.igstRate}%
                     </td>
                     <td className="py-2.5 px-2.5 text-right font-mono text-slate-900 border-r border-slate-100">
-                      {formatNumberOnly(g.igstAmount)}
+                      {formatMoney(g.igstAmount)}
                     </td>
                   </>
                 )}
 
                 {/* Total Tax for this group */}
                 <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                  {formatNumberOnly(g.totalTax)}
+                  {formatMoney(g.totalTax)}
                 </td>
               </tr>
             ))}
@@ -161,7 +161,7 @@ export default function GstSummaryTable({
                 TOTAL
               </td>
               <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900">
-                {formatNumberOnly(totalTaxable)}
+                {formatMoney(totalTaxable)}
               </td>
               {!isInterState ? (
                 <>
@@ -169,13 +169,13 @@ export default function GstSummaryTable({
                     --
                   </td>
                   <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 border-r border-slate-200">
-                    {formatNumberOnly(totalCGST)}
+                    {formatMoney(totalCGST)}
                   </td>
                   <td className="py-2.5 px-2 text-center text-slate-500 font-medium">
                     --
                   </td>
                   <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 border-r border-slate-200">
-                    {formatNumberOnly(totalSGST)}
+                    {formatMoney(totalSGST)}
                   </td>
                 </>
               ) : (
@@ -184,12 +184,12 @@ export default function GstSummaryTable({
                     --
                   </td>
                   <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 border-r border-slate-200">
-                    {formatNumberOnly(totalIGST)}
+                    {formatMoney(totalIGST)}
                   </td>
                 </>
               )}
               <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900">
-                {formatNumberOnly(totalTaxAll)}
+                {formatMoney(totalTaxAll)}
               </td>
             </tr>
           </tfoot>

@@ -1,7 +1,7 @@
 import html2pdf from 'html2pdf.js';
 
 const A4_WIDTH_MM = 210;
-const PDF_MARGIN_X_MM = 6;
+const PDF_MARGIN_X_MM = 10;
 const PDF_CONTENT_WIDTH_MM = A4_WIDTH_MM - PDF_MARGIN_X_MM * 2;
 const PDF_CONTENT_WIDTH_PX = Math.round((PDF_CONTENT_WIDTH_MM / 25.4) * 96);
 
@@ -22,7 +22,7 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   printWrapper.style.position = 'fixed';
   printWrapper.style.left = '-9999px';
   printWrapper.style.top = '0';
-  printWrapper.style.width = `${PDF_CONTENT_WIDTH_PX}px`;
+  printWrapper.style.setProperty('width', `${PDF_CONTENT_WIDTH_PX}px`, 'important');
   printWrapper.style.backgroundColor = '#ffffff';
   printWrapper.style.color = '#0f172a';
   printWrapper.style.zIndex = '-9999';
@@ -32,8 +32,8 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   // Clone source DOM
   const clone = sourceElement.cloneNode(true);
   clone.id = 'pdf-export-staging-clone';
-  clone.style.width = `${PDF_CONTENT_WIDTH_PX}px`;
-  clone.style.maxWidth = `${PDF_CONTENT_WIDTH_PX}px`;
+  clone.style.setProperty('width', `${PDF_CONTENT_WIDTH_PX}px`, 'important');
+  clone.style.setProperty('max-width', `${PDF_CONTENT_WIDTH_PX}px`, 'important');
   clone.style.minHeight = 'auto';
   clone.style.height = 'auto';
   clone.style.overflow = 'visible';
@@ -46,6 +46,10 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   // Inject print CSS rules into clone
   const styleTag = document.createElement('style');
   styleTag.innerHTML = `
+    #pdf-export-staging-clone {
+      width: ${PDF_CONTENT_WIDTH_PX}px !important;
+      max-width: ${PDF_CONTENT_WIDTH_PX}px !important;
+    }
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -53,6 +57,7 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     }
     table {
       width: 100% !important;
+      min-width: 0 !important;
       border-collapse: collapse !important;
       table-layout: fixed !important;
       page-break-inside: auto !important;
@@ -62,6 +67,51 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       word-break: normal !important;
       overflow-wrap: anywhere !important;
       min-width: 0 !important;
+    }
+    .quotation-items-table,
+    .quotation-items-table > table,
+    .gst-summary-table,
+    .gst-summary-table table {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+    .quotation-items-table table th,
+    .quotation-items-table table td,
+    .gst-summary-table table th,
+    .gst-summary-table table td {
+      max-width: none !important;
+    }
+    .quotation-items-table table td:nth-child(4),
+    .quotation-items-table table td:nth-child(7),
+    .quotation-items-table table td:nth-child(9),
+    .quotation-items-table table td:nth-child(10) {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      font-size: 10px !important;
+    }
+    .quotation-items-table table td:nth-child(2),
+    .quotation-items-table table th:nth-child(2) {
+      overflow-wrap: anywhere !important;
+      word-break: normal !important;
+    }
+    .quotation-preview-document,
+    .quotation-preview-document * {
+      min-width: 0 !important;
+    }
+    .quotation-preview-document img {
+      max-width: 100% !important;
+    }
+    .quotation-preview-document span,
+    .quotation-preview-document p,
+    .quotation-preview-document div {
+      overflow-wrap: anywhere !important;
+      word-break: normal !important;
+    }
+    .quotation-preview-document .font-mono {
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
     }
     p, span, div, th, td {
       max-width: 100% !important;
@@ -118,17 +168,36 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       overflow: visible !important;
       max-width: none !important;
     }
-    .quotation-items-table > table,
-    table.quotation-items-table {
-      min-width: 0 !important;
-    }
     .gst-summary-table {
       overflow: visible !important;
       max-width: none !important;
     }
     .gst-summary-table table {
-      min-width: 0 !important;
+      table-layout: fixed !important;
     }
+    .gst-summary-table table th,
+    .gst-summary-table table td {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      padding-left: 3px !important;
+      padding-right: 3px !important;
+      font-size: 10px !important;
+    }
+    .gst-summary-table table th:nth-child(1),
+    .gst-summary-table table td:nth-child(1) { width: 14% !important; }
+    .gst-summary-table table th:nth-child(2),
+    .gst-summary-table table td:nth-child(2) { width: 20% !important; }
+    .gst-summary-table table th:nth-child(3),
+    .gst-summary-table table td:nth-child(3) { width: 10% !important; }
+    .gst-summary-table table th:nth-child(4),
+    .gst-summary-table table td:nth-child(4) { width: 15% !important; }
+    .gst-summary-table table th:nth-child(5),
+    .gst-summary-table table td:nth-child(5) { width: 10% !important; }
+    .gst-summary-table table th:nth-child(6),
+    .gst-summary-table table td:nth-child(6) { width: 15% !important; }
+    .gst-summary-table table th:nth-child(7),
+    .gst-summary-table table td:nth-child(7) { width: 16% !important; }
   `;
   printWrapper.appendChild(styleTag);
   printWrapper.appendChild(clone);
@@ -145,12 +214,15 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       });
     })
   );
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
 
   // Clean filename
   const safeFilename = `${(quotationNumber || 'Document').toString().replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
 
   const opt = {
-    margin: [8, 6, 8, 6], // mm [top, right, bottom, left]
+    margin: [8, PDF_MARGIN_X_MM, 8, PDF_MARGIN_X_MM], // mm [top, right, bottom, left]
     filename: safeFilename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
@@ -169,7 +241,7 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       compress: true,
     },
     pagebreak: {
-      mode: ['css', 'legacy'],
+      mode: ['css'],
       avoid: ['tr', '.no-break', '[style*="page-break-inside: avoid"]'],
     },
   };

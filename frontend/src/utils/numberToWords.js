@@ -65,41 +65,24 @@ export function numberToWordsIndian(amount) {
   const numStr = roundedAmount.toFixed(2);
   const [rupeesPart, paisePart] = numStr.split('.');
 
-  let num = parseInt(rupeesPart, 10);
-  if (num === 0 && parseInt(paisePart, 10) === 0) {
+  if (BigInt(rupeesPart) === 0n && parseInt(paisePart, 10) === 0) {
     return 'INR Zero Rupees Only';
   }
 
-  const crores = Math.floor(num / 10000000);
-  num %= 10000000;
-
-  const lakhs = Math.floor(num / 100000);
-  num %= 100000;
-
-  const thousands = Math.floor(num / 1000);
-  num %= 1000;
-
-  const hundreds = num;
-
-  let words = '';
-
-  if (crores > 0) {
-    words += convertLessThanThousand(crores) + ' Crore, ';
-  }
-  if (lakhs > 0) {
-    words += convertLessThanThousand(lakhs) + ' Lakh, ';
-  }
-  if (thousands > 0) {
-    words += convertLessThanThousand(thousands) + ' Thousand, ';
-  }
-  if (hundreds > 0) {
-    words += convertLessThanThousand(hundreds) + ' ';
+  const units = ['', 'Thousand', 'Lakh', 'Crore', 'Arab', 'Kharab', 'Neel', 'Padma', 'Shankh'];
+  const groups = [];
+  let remaining = rupeesPart;
+  groups.unshift(Number(remaining.slice(-3)));
+  remaining = remaining.slice(0, -3);
+  while (remaining.length > 0) {
+    groups.unshift(Number(remaining.slice(-2)));
+    remaining = remaining.slice(0, -2);
   }
 
-  words = words.trim();
-  if (words.endsWith(',')) {
-    words = words.slice(0, -1).trim();
-  }
+  const words = groups
+    .map((group, index) => (group > 0 ? `${convertLessThanThousand(group)} ${units[groups.length - index - 1]}` : ''))
+    .filter(Boolean)
+    .join(', ');
 
   let result = 'INR ' + (words ? words + ' Rupees' : 'Zero Rupees');
 
@@ -111,20 +94,17 @@ export function numberToWordsIndian(amount) {
   return result + ' Only';
 }
 
-export function formatINR(val) {
-  if (val === null || val === undefined || isNaN(val)) return '₹0.00';
+export function formatMoney(val, includeCurrency = false) {
+  const numericValue = typeof val === 'string' ? Number(val.replace(/,/g, '').replace(/^₹\s*/, '')) : Number(val);
+  if (!Number.isFinite(numericValue)) return includeCurrency ? '₹0.00' : '0.00';
+
   return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+    ...(includeCurrency ? { style: 'currency', currency: 'INR' } : {}),
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
-  }).format(val);
+    useGrouping: true,
+  }).format(numericValue);
 }
 
-export function formatNumberOnly(val) {
-  if (val === null || val === undefined || isNaN(val)) return '0.00';
-  return new Intl.NumberFormat('en-IN', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  }).format(val);
-}
+export const formatINR = (val) => formatMoney(val, true);
+export const formatNumberOnly = (val) => formatMoney(val, false);
