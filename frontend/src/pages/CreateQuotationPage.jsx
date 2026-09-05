@@ -68,9 +68,12 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
         unit: 'Nos',
         discountPercent: 0,
         discountAmount: 0,
+        taxableValue: 0,
+        taxableAmount: 0,
         taxRate: 18,
         taxAmount: '',
         amount: '',
+        totalAmount: '',
         isManualOverride: false,
       },
     ],
@@ -297,7 +300,7 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
 
       target[field] = value;
 
-      if (field === 'taxAmount' || field === 'amount') {
+      if (field === 'taxAmount' || field === 'amount' || field === 'totalAmount') {
         target.isManualOverride = true;
       }
 
@@ -312,15 +315,18 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
         const taxRate = parseFloat(target.taxRate) || 0;
         const discPercent = parseFloat(target.discountPercent) || 0;
 
-        const gross = rate * qty;
+        const gross = Math.round(rate * qty * 100) / 100;
         const discAmount = Math.round(((gross * discPercent) / 100) * 100) / 100;
         const taxable = Math.max(0, Math.round((gross - discAmount) * 100) / 100);
         const tax = Math.round(((taxable * taxRate) / 100) * 100) / 100;
         const amt = Math.round((taxable + tax) * 100) / 100;
 
         target.discountAmount = discAmount;
+        target.taxableValue = taxable;
+        target.taxableAmount = taxable;
         target.taxAmount = tax;
         target.amount = amt;
+        target.totalAmount = amt;
         target.isManualOverride = false;
       }
 
@@ -347,9 +353,12 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
           unit: 'Nos',
           discountPercent: 0,
           discountAmount: 0,
+          taxableValue: 0,
+          taxableAmount: 0,
           taxRate: 18,
           taxAmount: '',
           amount: '',
+          totalAmount: '',
           isManualOverride: false,
         },
       ],
@@ -361,7 +370,8 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
     const rate = Number(product.rate) || 0;
     const qty = 1;
     const taxRate = Number(product.gstRate) || 18;
-    const taxable = rate * qty;
+    const gross = Math.round(rate * qty * 100) / 100;
+    const taxable = gross;
     const tax = Math.round(((taxable * taxRate) / 100) * 100) / 100;
     const amt = Math.round((taxable + tax) * 100) / 100;
 
@@ -374,9 +384,12 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
       unit: product.unit || 'Nos',
       discountPercent: 0,
       discountAmount: 0,
+      taxableValue: taxable,
+      taxableAmount: taxable,
       taxRate: taxRate,
       taxAmount: tax,
       amount: amt,
+      totalAmount: amt,
       isManualOverride: false,
     };
 
@@ -618,9 +631,12 @@ export default function CreateQuotationPage({ onToggleMobileSidebar }) {
               unit: 'Nos',
               discountPercent: 0,
               discountAmount: 0,
+              taxableValue: 0,
+              taxableAmount: 0,
               taxRate: 18,
               taxAmount: '',
               amount: '',
+              totalAmount: '',
               isManualOverride: false,
             },
           ],

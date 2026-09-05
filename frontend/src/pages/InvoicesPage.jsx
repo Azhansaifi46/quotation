@@ -37,7 +37,8 @@ export default function InvoicesPage({ onToggleMobileSidebar }) {
   };
 
   useEffect(() => {
-    fetchInvoices();
+    const timer = setTimeout(fetchInvoices, 250);
+    return () => clearTimeout(timer);
   }, [search, statusFilter]);
 
   const fetchInvoices = async () => {

@@ -36,7 +36,8 @@ export default function QuotationsListPage({ onToggleMobileSidebar }) {
   };
 
   useEffect(() => {
-    fetchQuotations();
+    const timer = setTimeout(fetchQuotations, 250);
+    return () => clearTimeout(timer);
   }, [search, docTypeFilter, statusFilter]);
 
   const fetchQuotations = async () => {

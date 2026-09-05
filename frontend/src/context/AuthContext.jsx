@@ -27,7 +27,16 @@ export function AuthProvider({ children }) {
       }
       setLoading(false);
     }
+
+    const handleSessionExpired = () => {
+      setToken('');
+      setUser(null);
+    };
+
+    window.addEventListener('qoutpro:session-expired', handleSessionExpired);
     loadUser();
+
+    return () => window.removeEventListener('qoutpro:session-expired', handleSessionExpired);
   }, []);
 
   // Step 1: Initiate Login (Validates password -> Dispatches 2FA OTP)

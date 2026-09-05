@@ -41,6 +41,14 @@ const documentItemSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    taxableValue: {
+      type: Number,
+      default: 0,
+    },
+    taxableAmount: {
+      type: Number,
+      default: 0,
+    },
     taxRate: {
       type: Number,
       required: true,
@@ -54,6 +62,10 @@ const documentItemSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true,
+      default: 0,
+    },
+    totalAmount: {
+      type: Number,
       default: 0,
     },
     isManualOverride: {

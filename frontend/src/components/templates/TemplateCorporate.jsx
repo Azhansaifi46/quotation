@@ -1,6 +1,7 @@
 import React from 'react';
 import { Building2, Phone, Mail, MapPin } from 'lucide-react';
 import { formatINR, formatNumberOnly } from '../../utils/numberToWords';
+import { calculateLineItem } from '../../utils/taxCalculator';
 import GstSummaryTable from '../GstSummaryTable';
 
 export default function TemplateCorporate({
@@ -112,30 +113,44 @@ export default function TemplateCorporate({
           <thead>
             <tr className="bg-indigo-900 text-white font-bold text-[10px]">
               <th style={{ width: '4%' }} className="py-2.5 px-1.5 text-center">#</th>
-              <th style={{ width: '38%' }} className="py-2.5 px-2.5">Description</th>
-              <th style={{ width: '11%' }} className="py-2.5 px-1 text-center">HSN</th>
-              <th style={{ width: '12%' }} className="py-2.5 px-1.5 text-right">Rate (₹)</th>
-              <th style={{ width: '6%' }} className="py-2.5 px-1 text-center">Qty</th>
-              <th style={{ width: '6%' }} className="py-2.5 px-1 text-center">Unit</th>
+              <th style={{ width: '24%' }} className="py-2.5 px-2.5">Description</th>
+              <th style={{ width: '8%' }} className="py-2.5 px-1 text-center">HSN</th>
+              <th style={{ width: '10%' }} className="py-2.5 px-1.5 text-right">Rate (₹)</th>
+              <th style={{ width: '5%' }} className="py-2.5 px-1 text-center">Qty</th>
+              <th style={{ width: '5%' }} className="py-2.5 px-1 text-center">Unit</th>
+              <th style={{ width: '12%' }} className="py-2.5 px-1.5 text-right">Taxable Value (₹)</th>
               <th style={{ width: '6%' }} className="py-2.5 px-1 text-center">Tax %</th>
-              <th style={{ width: '8%' }} className="py-2.5 px-1.5 text-right">Tax (₹)</th>
-              <th style={{ width: '9%' }} className="py-2.5 px-2 text-right">Amount (₹)</th>
+              <th style={{ width: '11%' }} className="py-2.5 px-1.5 text-right">Taxable Amount (₹)</th>
+              <th style={{ width: '15%' }} className="py-2.5 px-2 text-right">Total Amount (₹)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-150">
-            {items.map((item, idx) => (
-              <tr key={idx} className="hover:bg-slate-50/50" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                <td className="py-2 px-1.5 text-center text-slate-400 font-semibold">{idx + 1}</td>
-                <td className="py-2 px-2.5 font-medium text-slate-900 leading-snug break-words">{item.description || item.name || '--'}</td>
-                <td className="py-2 px-1 text-center text-slate-600 font-mono text-[10px]">{item.hsnSac || '--'}</td>
-                <td className="py-2 px-1.5 text-right font-mono text-slate-700">{formatNumberOnly(item.rate)}</td>
-                <td className="py-2 px-1 text-center font-medium text-slate-800">{item.quantity}</td>
-                <td className="py-2 px-1 text-center text-slate-600">{item.unit || 'Nos'}</td>
-                <td className="py-2 px-1 text-center text-slate-600">{item.taxRate}%</td>
-                <td className="py-2 px-1.5 text-right font-mono text-slate-700">{formatNumberOnly(item.taxAmount)}</td>
-                <td className="py-2 px-2 text-right font-mono font-bold text-slate-900">{formatNumberOnly(item.amount)}</td>
+            {items && items.length > 0 ? (
+              items.map((item, idx) => {
+                const calculatedItem = calculateLineItem(item, isInterState);
+
+                return (
+                  <tr key={idx} className="hover:bg-slate-50/50" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <td className="py-2 px-1.5 text-center text-slate-400 font-semibold">{idx + 1}</td>
+                    <td className="py-2 px-2.5 font-medium text-slate-900 leading-snug break-words">{item.description || item.name || '--'}</td>
+                    <td className="py-2 px-1 text-center text-slate-600 font-mono text-[10px]">{item.hsnSac || '--'}</td>
+                    <td className="py-2 px-1.5 text-right font-mono text-slate-700">{formatNumberOnly(item.rate)}</td>
+                    <td className="py-2 px-1 text-center font-medium text-slate-800">{item.quantity}</td>
+                    <td className="py-2 px-1 text-center text-slate-600">{item.unit || 'Nos'}</td>
+                    <td className="py-2 px-1.5 text-right font-mono font-medium text-slate-800">{formatNumberOnly(calculatedItem.taxableValue)}</td>
+                    <td className="py-2 px-1 text-center text-slate-600">{item.taxRate}%</td>
+                    <td className="py-2 px-1.5 text-right font-mono text-slate-700">{formatNumberOnly(calculatedItem.taxAmount)}</td>
+                    <td className="py-2 px-2 text-right font-mono font-bold text-slate-900">{formatNumberOnly(calculatedItem.totalAmount)}</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={10} className="py-6 text-center text-slate-400">
+                  No items added.
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

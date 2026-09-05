@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, PackagePlus, ReceiptText, Sparkles, Percent } from 'lucide-react';
-import { formatINR } from '../utils/numberToWords';
+import { formatINR, formatNumberOnly } from '../utils/numberToWords';
+import { calculateLineItem } from '../utils/taxCalculator';
 
 export default function ItemsTableCard({
   items,
@@ -50,167 +51,179 @@ export default function ItemsTableCard({
 
       {/* Items Table Responsive Container */}
       <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-2">
-        <table className="w-full min-w-[950px] border-collapse text-left">
+        <table className="w-full min-w-[1100px] border-collapse text-left">
           <thead>
             <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/50">
               <th className="py-3 px-2 w-8 text-center">#</th>
-              <th className="py-3 px-2.5 min-w-[220px]">
+              <th className="py-3 px-2.5 min-w-[200px]">
                 Item / Service Description <span className="text-rose-500">*</span>
               </th>
-              <th className="py-3 px-2 w-24">HSN / SAC</th>
+              <th className="py-3 px-2 w-20">HSN / SAC</th>
               <th className="py-3 px-2 w-24 text-right">Rate (₹)</th>
               <th className="py-3 px-2 w-16 text-center">Qty</th>
               <th className="py-3 px-2 w-20">Unit</th>
-              <th className="py-3 px-2 w-20 text-right">Disc %</th>
+              <th className="py-3 px-2 w-16 text-right">Disc %</th>
+              <th className="py-3 px-2 w-28 text-right">Taxable Value (₹)</th>
               <th className="py-3 px-2 w-20">Tax %</th>
-              <th className="py-3 px-2 w-24 text-right">Tax (₹)</th>
-              <th className="py-3 px-2 w-28 text-right">Amount (₹)</th>
+              <th className="py-3 px-2 w-28 text-right">Taxable Amount (₹)</th>
+              <th className="py-3 px-2 w-32 text-right">Total Amount (₹)</th>
               <th className="py-3 px-2 w-10 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {items.map((item, idx) => (
-              <tr
-                key={item._id || idx}
-                className="hover:bg-slate-50/70 transition-colors group align-top"
-              >
-                {/* Row Number */}
-                <td className="py-3 px-2 text-center text-xs font-semibold text-slate-400 pt-4">
-                  {idx + 1}
-                </td>
+            {items.map((item, idx) => {
+              const calculatedItem = calculateLineItem(item);
 
-                {/* Description */}
-                <td className="py-2.5 px-2.5">
-                  <textarea
-                    rows={2}
-                    required
-                    value={item.description || ''}
-                    onChange={(e) => handleFieldChange(idx, 'description', e.target.value)}
-                    placeholder="Item / service description..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all resize-y min-h-[44px]"
-                  />
-                </td>
+              return (
+                <tr
+                  key={item._id || idx}
+                  className="hover:bg-slate-50/70 transition-colors group align-top"
+                >
+                  {/* Row Number */}
+                  <td className="py-3 px-2 text-center text-xs font-semibold text-slate-400 pt-4">
+                    {idx + 1}
+                  </td>
 
-                {/* HSN / SAC */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="text"
-                    value={item.hsnSac || ''}
-                    onChange={(e) => handleFieldChange(idx, 'hsnSac', e.target.value)}
-                    placeholder="HSN"
-                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* Description */}
+                  <td className="py-2.5 px-2.5">
+                    <textarea
+                      rows={2}
+                      required
+                      value={item.description || ''}
+                      onChange={(e) => handleFieldChange(idx, 'description', e.target.value)}
+                      placeholder="Item / service description..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all resize-y min-h-[44px]"
+                    />
+                  </td>
 
-                {/* Rate */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    required
-                    value={item.rate}
-                    onChange={(e) => handleFieldChange(idx, 'rate', e.target.value)}
-                    placeholder="0.00"
-                    className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* HSN / SAC */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="text"
+                      value={item.hsnSac || ''}
+                      onChange={(e) => handleFieldChange(idx, 'hsnSac', e.target.value)}
+                      placeholder="HSN"
+                      className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
+                    />
+                  </td>
 
-                {/* Quantity */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="number"
-                    step="any"
-                    min="0.01"
-                    required
-                    value={item.quantity}
-                    onChange={(e) => handleFieldChange(idx, 'quantity', e.target.value)}
-                    className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-center text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* Rate */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      required
+                      value={item.rate}
+                      onChange={(e) => handleFieldChange(idx, 'rate', e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
+                    />
+                  </td>
 
-                {/* Unit */}
-                <td className="py-2.5 px-2">
-                  <select
-                    value={item.unit || 'Nos'}
-                    onChange={(e) => handleFieldChange(idx, 'unit', e.target.value)}
-                    className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none bg-white font-medium"
-                  >
-                    {unitOptions.map((u) => (
-                      <option key={u} value={u}>
-                        {u}
-                      </option>
-                    ))}
-                  </select>
-                </td>
+                  {/* Quantity */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="number"
+                      step="any"
+                      min="0.01"
+                      required
+                      value={item.quantity}
+                      onChange={(e) => handleFieldChange(idx, 'quantity', e.target.value)}
+                      className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-center text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
+                    />
+                  </td>
 
-                {/* Line Discount % */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    max="100"
-                    value={item.discountPercent || ''}
-                    onChange={(e) => handleFieldChange(idx, 'discountPercent', e.target.value)}
-                    placeholder="0%"
-                    className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* Unit */}
+                  <td className="py-2.5 px-2">
+                    <select
+                      value={item.unit || 'Nos'}
+                      onChange={(e) => handleFieldChange(idx, 'unit', e.target.value)}
+                      className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none bg-white font-medium"
+                    >
+                      {unitOptions.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
 
-                {/* Tax Rate % */}
-                <td className="py-2.5 px-2">
-                  <select
-                    value={item.taxRate !== undefined ? item.taxRate : 18}
-                    onChange={(e) => handleFieldChange(idx, 'taxRate', Number(e.target.value))}
-                    className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none bg-white font-semibold"
-                  >
-                    {taxOptions.map((rate) => (
-                      <option key={rate} value={rate}>
-                        {rate}%
-                      </option>
-                    ))}
-                  </select>
-                </td>
+                  {/* Line Discount % */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      max="100"
+                      value={item.discountPercent || ''}
+                      onChange={(e) => handleFieldChange(idx, 'discountPercent', e.target.value)}
+                      placeholder="0%"
+                      className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
+                    />
+                  </td>
 
-                {/* Tax Amount */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="number"
-                    step="any"
-                    value={item.taxAmount !== undefined ? item.taxAmount : ''}
-                    onChange={(e) => handleFieldChange(idx, 'taxAmount', e.target.value)}
-                    placeholder="0.00"
-                    className="w-full px-2 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* Taxable Value (Amount Before Tax) */}
+                  <td className="py-2.5 px-2">
+                    <div className="w-full px-2 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-right text-slate-800 select-all">
+                      {formatNumberOnly(calculatedItem.taxableValue)}
+                    </div>
+                  </td>
 
-                {/* Amount */}
-                <td className="py-2.5 px-2">
-                  <input
-                    type="number"
-                    step="any"
-                    value={item.amount !== undefined ? item.amount : ''}
-                    onChange={(e) => handleFieldChange(idx, 'amount', e.target.value)}
-                    placeholder="0.00"
-                    className="w-full px-2 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-right text-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
-                  />
-                </td>
+                  {/* Tax Rate % */}
+                  <td className="py-2.5 px-2">
+                    <select
+                      value={item.taxRate !== undefined ? item.taxRate : 18}
+                      onChange={(e) => handleFieldChange(idx, 'taxRate', Number(e.target.value))}
+                      className="w-full px-1.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none bg-white font-semibold"
+                    >
+                      {taxOptions.map((rate) => (
+                        <option key={rate} value={rate}>
+                          {rate}%
+                        </option>
+                      ))}
+                    </select>
+                  </td>
 
-                {/* Delete */}
-                <td className="py-2.5 px-2 text-center pt-3.5">
-                  <button
-                    type="button"
-                    onClick={() => onRemoveItem(idx)}
-                    disabled={items.length <= 1}
-                    title="Delete item"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-30"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  {/* Taxable Amount (Calculated Tax) */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="number"
+                      step="any"
+                      value={calculatedItem.taxAmount}
+                      onChange={(e) => handleFieldChange(idx, 'taxAmount', e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-2 py-2 rounded-xl border border-slate-200 text-xs font-mono text-right text-slate-800 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none font-medium"
+                    />
+                  </td>
+
+                  {/* Total Amount (Taxable Value + Taxable Amount) */}
+                  <td className="py-2.5 px-2">
+                    <input
+                      type="number"
+                      step="any"
+                      value={calculatedItem.totalAmount}
+                      onChange={(e) => handleFieldChange(idx, 'amount', e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-2 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-right text-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none"
+                    />
+                  </td>
+
+                  {/* Delete */}
+                  <td className="py-2.5 px-2 text-center pt-3.5">
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(idx)}
+                      disabled={items.length <= 1}
+                      title="Delete item"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-30"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

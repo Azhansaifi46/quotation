@@ -17,17 +17,12 @@ router.get('/', async (req, res) => {
 
     if (search && search.trim()) {
       const safeSearch = escapeRegex(search.trim());
-      query.$and = [
-        { userId: req.user._id },
-        {
-          $or: [
-            { name: { $regex: safeSearch, $options: 'i' } },
-            { description: { $regex: safeSearch, $options: 'i' } },
-            { hsnSac: { $regex: safeSearch, $options: 'i' } },
-            { sku: { $regex: safeSearch, $options: 'i' } },
-            { category: { $regex: safeSearch, $options: 'i' } },
-          ],
-        },
+      query.$or = [
+        { name: { $regex: safeSearch, $options: 'i' } },
+        { description: { $regex: safeSearch, $options: 'i' } },
+        { hsnSac: { $regex: safeSearch, $options: 'i' } },
+        { sku: { $regex: safeSearch, $options: 'i' } },
+        { category: { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

@@ -1,5 +1,10 @@
 import html2pdf from 'html2pdf.js';
 
+const A4_WIDTH_MM = 210;
+const PDF_MARGIN_X_MM = 6;
+const PDF_CONTENT_WIDTH_MM = A4_WIDTH_MM - PDF_MARGIN_X_MM * 2;
+const PDF_CONTENT_WIDTH_PX = Math.round((PDF_CONTENT_WIDTH_MM / 25.4) * 96);
+
 /**
  * High-Precision Professional A4 PDF Exporter for Quotations and Invoices
  * Guarantees standard A4 dimensions, perfect margins, crisp typography, and strict break protection.
@@ -11,12 +16,13 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     return false;
   }
 
-  // Create an isolated, fixed-dimension A4 print staging container
+  // Stage the clone at the printable A4 width so the PDF margins do not push
+  // the rightmost columns outside the page.
   const printWrapper = document.createElement('div');
   printWrapper.style.position = 'fixed';
   printWrapper.style.left = '-9999px';
   printWrapper.style.top = '0';
-  printWrapper.style.width = '794px'; // Standard A4 pixel width at 96 DPI
+  printWrapper.style.width = `${PDF_CONTENT_WIDTH_PX}px`;
   printWrapper.style.backgroundColor = '#ffffff';
   printWrapper.style.color = '#0f172a';
   printWrapper.style.zIndex = '-9999';
@@ -26,9 +32,11 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   // Clone source DOM
   const clone = sourceElement.cloneNode(true);
   clone.id = 'pdf-export-staging-clone';
-  clone.style.width = '794px';
-  clone.style.maxWidth = '794px';
+  clone.style.width = `${PDF_CONTENT_WIDTH_PX}px`;
+  clone.style.maxWidth = `${PDF_CONTENT_WIDTH_PX}px`;
   clone.style.minHeight = 'auto';
+  clone.style.height = 'auto';
+  clone.style.overflow = 'visible';
   clone.style.margin = '0 auto';
   clone.style.boxShadow = 'none';
   clone.style.border = 'none';
@@ -46,7 +54,17 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     table {
       width: 100% !important;
       border-collapse: collapse !important;
+      table-layout: fixed !important;
       page-break-inside: auto !important;
+    }
+    th, td {
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: anywhere !important;
+      min-width: 0 !important;
+    }
+    p, span, div, th, td {
+      max-width: 100% !important;
     }
     tr {
       page-break-inside: avoid !important;
@@ -89,6 +107,13 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     .flex-row {
       flex-direction: row !important;
     }
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    .overflow-hidden {
+      overflow: visible !important;
+    }
   `;
   printWrapper.appendChild(styleTag);
   printWrapper.appendChild(clone);
@@ -110,16 +135,16 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   const safeFilename = `${(quotationNumber || 'Document').toString().replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
 
   const opt = {
-    margin: [8, 8, 8, 8], // mm [top, right, bottom, left]
+    margin: [8, 6, 8, 6], // mm [top, right, bottom, left]
     filename: safeFilename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
-      scale: 2.2, // High resolution for crisp text
+      scale: 2, // High resolution for crisp text & graphics
       useCORS: true,
       letterRendering: true,
       scrollY: 0,
       scrollX: 0,
-      windowWidth: 794,
+      windowWidth: PDF_CONTENT_WIDTH_PX,
       logging: false,
     },
     jsPDF: {

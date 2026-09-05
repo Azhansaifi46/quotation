@@ -13,7 +13,8 @@ export function calculateLineItem(item, isInterState = false) {
     discAmount = Math.round(((grossAmount * discPercent) / 100) * 100) / 100;
   }
 
-  const taxableAmount = Math.max(0, Math.round((grossAmount - discAmount) * 100) / 100);
+  const taxableValue = Math.max(0, Math.round((grossAmount - discAmount) * 100) / 100);
+  const taxableAmount = taxableValue; // Alias for backward compatibility
   const taxRate = parseFloat(item.taxRate) || 0;
 
   let taxAmount = item.taxAmount;
@@ -21,24 +22,28 @@ export function calculateLineItem(item, isInterState = false) {
 
   // If not manually overridden or empty
   if (!item.isManualOverride || taxAmount === undefined || taxAmount === null || taxAmount === '') {
-    taxAmount = Math.round(((taxableAmount * taxRate) / 100) * 100) / 100;
+    taxAmount = Math.round(((taxableValue * taxRate) / 100) * 100) / 100;
   } else {
     taxAmount = parseFloat(taxAmount) || 0;
   }
 
   if (!item.isManualOverride || amount === undefined || amount === null || amount === '') {
-    amount = Math.round((taxableAmount + taxAmount) * 100) / 100;
+    amount = Math.round((taxableValue + taxAmount) * 100) / 100;
   } else {
     amount = parseFloat(amount) || 0;
   }
+
+  const totalAmount = amount;
 
   return {
     ...item,
     grossAmount,
     discountAmount: discAmount,
+    taxableValue,
     taxableAmount,
     taxAmount,
     amount,
+    totalAmount,
   };
 }
 
@@ -158,18 +163,14 @@ export function calculateQuotationTotals(
   docDiscount = { type: 'percentage', rate: 0, amount: 0 }
 ) {
   const isInterState = companyStateCode !== placeOfSupplyCode;
+  const calculatedItems = items.map((item) => calculateLineItem(item, isInterState));
 
   let subtotal = 0;
   let totalLineDiscounts = 0;
 
-  items.forEach((item) => {
-    const rate = parseFloat(item.rate) || 0;
-    const qty = parseFloat(item.quantity) || 0;
-    const lineGross = rate * qty;
-    const lineDisc = parseFloat(item.discountAmount) || 0;
-
-    subtotal += lineGross;
-    totalLineDiscounts += lineDisc;
+  calculatedItems.forEach((item) => {
+    subtotal += item.grossAmount;
+    totalLineDiscounts += item.discountAmount;
   });
 
   subtotal = Math.round(subtotal * 100) / 100;
@@ -190,7 +191,7 @@ export function calculateQuotationTotals(
   // Use customTaxRows if provided, otherwise generate default tax rows
   let activeTaxRows = customTaxRows;
   if (!activeTaxRows || activeTaxRows.length === 0) {
-    activeTaxRows = generateDefaultTaxRows(items, isInterState);
+    activeTaxRows = generateDefaultTaxRows(calculatedItems, isInterState);
   }
 
   let totalTax = 0;
@@ -241,7 +242,7 @@ export function calculateQuotationTotals(
 
   // Group by HSN/SAC for GST Summary Table
   const hsnGroups = {};
-  items.forEach((item) => {
+  calculatedItems.forEach((item) => {
     const rate = parseFloat(item.rate) || 0;
     const qty = parseFloat(item.quantity) || 0;
     const disc = parseFloat(item.discountAmount) || 0;

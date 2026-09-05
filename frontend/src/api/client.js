@@ -7,6 +7,19 @@ const api = axios.create({
   },
 });
 
+const retryTransientRequest = (request, retries = 3) =>
+  request().catch((error) => {
+    const isTransient = !error.response || error.response.status >= 500;
+    if (!isTransient || retries === 0) {
+      throw error;
+    }
+
+    const delay = (4 - retries) * 500;
+    return new Promise((resolve) => setTimeout(resolve, delay)).then(() =>
+      retryTransientRequest(request, retries - 1),
+    );
+  });
+
 // Automatically attach JWT Bearer Token to all outgoing requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -16,6 +29,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const requestUrl = error.config?.url || '';
+    const hasSession = Boolean(localStorage.getItem('token'));
+    const isAuthRequest = requestUrl.includes('/auth/');
+
+    if (error.response?.status === 401 && hasSession && !isAuthRequest) {
+      localStorage.removeItem('token');
+      window.dispatchEvent(new Event('qoutpro:session-expired'));
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 // Authentication & OTP API
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
@@ -23,7 +52,7 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   verifySignupOTP: (data) => api.post('/auth/verify-signup-otp', data),
   resendOTP: (data) => api.post('/auth/resend-otp', data),
-  demoLogin: () => api.post('/auth/demo-login'),
+  demoLogin: () => retryTransientRequest(() => api.post('/auth/demo-login')),
   getMe: () => api.get('/auth/me'),
   updateProfile: (profileData) => api.put('/auth/profile', profileData),
   changePassword: (passwordData) => api.put('/auth/change-password', passwordData),
