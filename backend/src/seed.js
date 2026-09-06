@@ -8,24 +8,26 @@ import User from './models/User.js';
 export const seedInitialData = async () => {
   try {
     // 0. Seed Default Admin User if not exists
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      await User.create({
+    let adminUser = await User.findOne({ email: 'admin@sunbrightsolar.com' });
+    if (!adminUser) {
+      adminUser = await User.create({
         name: 'Sun Bright Administrator',
         email: 'admin@sunbrightsolar.com',
         password: 'admin123',
         phone: '+91 98765 43210',
         designation: 'Enterprise System Administrator',
         role: 'admin',
+        isVerified: true,
       });
       console.log('✅ Default Admin user created: admin@sunbrightsolar.com (Password: admin123)');
     }
 
     // 1. Seed Business Profile / Settings if not exists
-    const settingsCount = await Settings.countDocuments();
+    const settingsCount = await Settings.countDocuments({ userId: adminUser._id });
     let currentSettings;
     if (settingsCount === 0) {
       currentSettings = await Settings.create({
+        userId: adminUser._id,
         companyName: 'SUN BRIGHT ENTERPRISE',
         ownerName: 'Rajesh Sharma',
         businessCategory: 'Solar',
@@ -65,13 +67,13 @@ export const seedInitialData = async () => {
       });
       console.log('✅ Business Profile seeded successfully');
     } else {
-      currentSettings = await Settings.findOne();
+      currentSettings = await Settings.findOne({ userId: adminUser._id });
     }
 
     // 2. Seed Multi-Industry Products & Services if not exists
-    const productCount = await Product.countDocuments();
+    const productCount = await Product.countDocuments({ userId: adminUser._id });
     if (productCount === 0) {
-      await Product.insertMany([
+      const defaultProducts = [
         // Solar
         {
           name: 'Mono PERC Solar Panels (545W Tier-1 Half-Cut)',
@@ -209,14 +211,16 @@ export const seedInitialData = async () => {
           category: 'Services',
           stock: 999,
         },
-      ]);
+      ];
+
+      await Product.insertMany(defaultProducts.map((p) => ({ ...p, userId: adminUser._id })));
       console.log('✅ Multi-industry products and services seeded successfully');
     }
 
     // 3. Seed Customers if not exists
-    const customerCount = await Customer.countDocuments();
+    const customerCount = await Customer.countDocuments({ userId: adminUser._id });
     if (customerCount === 0) {
-      await Customer.insertMany([
+      const defaultCustomers = [
         {
           name: 'Greenfield Eco Agro Farms Pvt Ltd',
           mobile: '+91 98220 12345',
@@ -247,7 +251,9 @@ export const seedInitialData = async () => {
           placeOfSupply: 'Gujarat',
           placeOfSupplyCode: '24',
         },
-      ]);
+      ];
+
+      await Customer.insertMany(defaultCustomers.map((c) => ({ ...c, userId: adminUser._id })));
       console.log('✅ Customers seeded successfully');
     }
   } catch (error) {

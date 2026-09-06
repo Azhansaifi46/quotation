@@ -46,6 +46,57 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET Billing & Payment Ledger across all invoices for logged-in user
+router.get('/billing/ledger', async (req, res) => {
+  try {
+    const documents = await Quotation.find({
+      userId: req.user._id,
+      $or: [
+        { 'payments.0': { $exists: true } },
+        { documentType: 'Invoice' },
+      ],
+    }).sort({ updatedAt: -1 });
+
+    const ledgerEntries = [];
+
+    documents.forEach((doc) => {
+      if (doc.payments && doc.payments.length > 0) {
+        doc.payments.forEach((payment) => {
+          ledgerEntries.push({
+            paymentId: payment.paymentId,
+            receiptNumber: payment.receiptNumber || `REC-${doc.quotationNumber.replace(/[^0-9]/g, '') || '01'}`,
+            invoiceId: doc._id,
+            invoiceNumber: doc.quotationNumber,
+            documentType: doc.documentType || 'Invoice',
+            customer: doc.customer,
+            company: doc.company,
+            paymentDate: payment.paymentDate,
+            paymentMode: payment.paymentMode,
+            referenceNo: payment.referenceNo,
+            notes: payment.notes,
+            amount: payment.amount,
+            invoiceTotal: doc.summary?.grandTotal || 0,
+            paidAmount: doc.paidAmount || 0,
+            balanceDue: doc.balanceDue || 0,
+            invoiceStatus: doc.status,
+            recordedAt: payment.recordedAt,
+          });
+        });
+      }
+    });
+
+    ledgerEntries.sort((a, b) => new Date(b.paymentDate || b.recordedAt) - new Date(a.paymentDate || a.recordedAt));
+
+    res.json({
+      success: true,
+      count: ledgerEntries.length,
+      data: ledgerEntries,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // GET single document by ID (strictly belonging to user)
 router.get('/:id', async (req, res) => {
   try {
@@ -76,10 +127,19 @@ router.post('/', async (req, res) => {
     }
 
     const docType = docData.documentType || 'Quotation';
+    const grandTotal = docData.summary?.grandTotal || 0;
+    const paidAmount = (docData.payments && docData.payments.length > 0)
+      ? docData.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+      : (parseFloat(docData.paidAmount) || 0);
+    const balanceDue = (docData.balanceDue !== undefined && docData.balanceDue !== null)
+      ? parseFloat(docData.balanceDue)
+      : Math.max(0, Math.round((grandTotal - paidAmount) * 100) / 100);
     
     // Explicitly bind to authenticated user
     const newDoc = await Quotation.create({
       ...docData,
+      paidAmount,
+      balanceDue,
       userId: req.user._id,
     });
 
@@ -109,9 +169,21 @@ router.post('/', async (req, res) => {
 // PUT update document (strictly belonging to user)
 router.put('/:id', async (req, res) => {
   try {
+    const updateData = { ...req.body };
+    if (updateData.summary?.grandTotal !== undefined) {
+      const grandTotal = updateData.summary.grandTotal || 0;
+      const paidAmount = (updateData.payments && updateData.payments.length > 0)
+        ? updateData.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+        : (parseFloat(updateData.paidAmount) || 0);
+      updateData.paidAmount = paidAmount;
+      if (updateData.balanceDue === undefined || updateData.balanceDue === null) {
+        updateData.balanceDue = Math.max(0, Math.round((grandTotal - paidAmount) * 100) / 100);
+      }
+    }
+
     const updated = await Quotation.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
-      { ...req.body, userId: req.user._id },
+      { ...updateData, userId: req.user._id },
       { new: true, runValidators: true }
     );
 
@@ -151,6 +223,115 @@ router.patch('/:id/status', async (req, res) => {
       success: true,
       data: updated,
       message: 'Status updated successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST Record Payment against an invoice/document
+router.post('/:id/payments', async (req, res) => {
+  try {
+    const { amount, paymentDate, paymentMode = 'UPI', referenceNo = '', notes = '' } = req.body;
+    const numAmount = parseFloat(amount);
+
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid payment amount is required' });
+    }
+
+    const document = await Quotation.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!document) {
+      return res.status(404).json({ success: false, message: 'Document not found or access denied' });
+    }
+
+    const grandTotal = document.summary?.grandTotal || 0;
+    const currentPaid = (document.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const newPaid = Math.round((currentPaid + numAmount) * 100) / 100;
+    const newBalance = Math.max(0, Math.round((grandTotal - newPaid) * 100) / 100);
+
+    const paymentEntry = {
+      paymentId: `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      receiptNumber: `REC-${Date.now().toString().slice(-6)}`,
+      amount: numAmount,
+      paymentDate: paymentDate || new Date().toISOString().split('T')[0],
+      paymentMode,
+      referenceNo,
+      notes,
+      recordedAt: new Date(),
+    };
+
+    if (!document.payments) {
+      document.payments = [];
+    }
+    document.payments.push(paymentEntry);
+    document.paidAmount = newPaid;
+    document.balanceDue = newBalance;
+
+    // Auto update status based on balance and due date
+    if (newBalance <= 0) {
+      document.status = 'Paid';
+    } else if (newPaid > 0) {
+      document.status = 'Partial';
+    }
+
+    await document.save();
+
+    res.status(201).json({
+      success: true,
+      data: document,
+      payment: paymentEntry,
+      message: `Payment of ₹${numAmount} recorded successfully!`,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE Remove a recorded payment
+router.delete('/:id/payments/:paymentId', async (req, res) => {
+  try {
+    const document = await Quotation.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!document) {
+      return res.status(404).json({ success: false, message: 'Document not found or access denied' });
+    }
+
+    const prevPayments = document.payments || [];
+    const updatedPayments = prevPayments.filter((p) => p.paymentId !== req.params.paymentId);
+
+    if (prevPayments.length === updatedPayments.length) {
+      return res.status(404).json({ success: false, message: 'Payment record not found' });
+    }
+
+    const grandTotal = document.summary?.grandTotal || 0;
+    const newPaid = updatedPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const newBalance = Math.max(0, Math.round((grandTotal - newPaid) * 100) / 100);
+
+    document.payments = updatedPayments;
+    document.paidAmount = newPaid;
+    document.balanceDue = newBalance;
+
+    if (newBalance <= 0 && grandTotal > 0) {
+      document.status = 'Paid';
+    } else if (newPaid > 0) {
+      document.status = 'Partial';
+    } else {
+      document.status = 'Unpaid';
+    }
+
+    await document.save();
+
+    res.json({
+      success: true,
+      data: document,
+      message: 'Payment record removed successfully',
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

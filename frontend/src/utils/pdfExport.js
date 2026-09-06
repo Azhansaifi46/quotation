@@ -34,6 +34,11 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
   clone.id = 'pdf-export-staging-clone';
   clone.style.setProperty('width', `${PDF_CONTENT_WIDTH_PX}px`, 'important');
   clone.style.setProperty('max-width', `${PDF_CONTENT_WIDTH_PX}px`, 'important');
+  clone.style.removeProperty('transform');
+  clone.style.removeProperty('transform-origin');
+  clone.style.removeProperty('transition');
+  clone.style.display = 'block';
+  clone.style.flex = 'none';
   clone.style.minHeight = 'auto';
   clone.style.height = 'auto';
   clone.style.overflow = 'visible';
@@ -62,12 +67,6 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       table-layout: fixed !important;
       page-break-inside: auto !important;
     }
-    th, td {
-      white-space: normal !important;
-      word-break: normal !important;
-      overflow-wrap: anywhere !important;
-      min-width: 0 !important;
-    }
     .quotation-items-table,
     .quotation-items-table > table,
     .gst-summary-table,
@@ -80,6 +79,13 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     .gst-summary-table table th,
     .gst-summary-table table td {
       max-width: none !important;
+    }
+    .quotation-items-table table th,
+    .quotation-items-table table td {
+      min-width: 0 !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: anywhere !important;
     }
     .quotation-items-table table td:nth-child(4),
     .quotation-items-table table td:nth-child(7),
@@ -113,7 +119,7 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
       overflow-wrap: anywhere !important;
       word-break: break-word !important;
     }
-    p, span, div, th, td {
+    p, span, div {
       max-width: 100% !important;
     }
     tr {
@@ -174,30 +180,13 @@ export async function exportQuotationToPDF(elementId, quotationNumber = 'Quotati
     }
     .gst-summary-table table {
       table-layout: fixed !important;
-    }
-    .gst-summary-table table th,
-    .gst-summary-table table td {
-      white-space: normal !important;
-      word-break: break-word !important;
-      overflow-wrap: anywhere !important;
-      padding-left: 3px !important;
-      padding-right: 3px !important;
       font-size: 10px !important;
     }
-    .gst-summary-table table th:nth-child(1),
-    .gst-summary-table table td:nth-child(1) { width: 14% !important; }
-    .gst-summary-table table th:nth-child(2),
-    .gst-summary-table table td:nth-child(2) { width: 20% !important; }
-    .gst-summary-table table th:nth-child(3),
-    .gst-summary-table table td:nth-child(3) { width: 10% !important; }
-    .gst-summary-table table th:nth-child(4),
-    .gst-summary-table table td:nth-child(4) { width: 15% !important; }
-    .gst-summary-table table th:nth-child(5),
-    .gst-summary-table table td:nth-child(5) { width: 10% !important; }
-    .gst-summary-table table th:nth-child(6),
-    .gst-summary-table table td:nth-child(6) { width: 15% !important; }
-    .gst-summary-table table th:nth-child(7),
-    .gst-summary-table table td:nth-child(7) { width: 16% !important; }
+    .gst-summary-table th,
+    .gst-summary-table td {
+      padding-left: 6px !important;
+      padding-right: 6px !important;
+    }
   `;
   printWrapper.appendChild(styleTag);
   printWrapper.appendChild(clone);

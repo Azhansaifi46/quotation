@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import TemplateNavy from './templates/TemplateNavy';
 import TemplateCorporate from './templates/TemplateCorporate';
@@ -13,6 +13,9 @@ export default function QuotationPreview({
   selectedTemplate = null,
 }) {
   const [qrSrc, setQrSrc] = useState('');
+  const previewViewportRef = useRef(null);
+  const previewDocumentRef = useRef(null);
+  const [mobileFit, setMobileFit] = useState(null);
 
   const templateId =
     selectedTemplate ||
@@ -58,6 +61,37 @@ export default function QuotationPreview({
     }
   }, [paymentInfo, company.name, company.upiId, grandTotal, upiId]);
 
+  useLayoutEffect(() => {
+    const viewport = previewViewportRef.current;
+    const documentElement = previewDocumentRef.current;
+    if (!viewport || !documentElement) return undefined;
+
+    const updateMobileFit = () => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        documentElement.style.removeProperty('width');
+        documentElement.style.removeProperty('max-width');
+        setMobileFit(null);
+        return;
+      }
+
+      documentElement.style.setProperty('width', '800px', 'important');
+      documentElement.style.setProperty('max-width', 'none', 'important');
+      const scale = Math.min(1, viewport.clientWidth / 800);
+      setMobileFit({
+        scale,
+        height: documentElement.scrollHeight * scale,
+      });
+    };
+
+    const observer = new ResizeObserver(updateMobileFit);
+    observer.observe(viewport);
+    observer.observe(documentElement);
+    updateMobileFit();
+
+    return () => observer.disconnect();
+  }, []);
+
   const renderTemplate = () => {
     switch (templateId) {
       case 'corporate':
@@ -101,12 +135,28 @@ export default function QuotationPreview({
   };
 
   return (
-    <div className="w-full flex justify-center py-2 px-1 print:p-0">
+    <div
+      ref={previewViewportRef}
+      className="quotation-preview-viewport w-full flex justify-center py-2 px-1 print:p-0"
+      style={mobileFit ? { height: `${mobileFit.height}px` } : undefined}
+    >
       <div
+        ref={previewDocumentRef}
         id={previewId}
         className="quotation-preview-document w-full max-w-[800px] min-h-[1130px] bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-visible font-sans print:shadow-none print:border-none print:rounded-none transition-all duration-300"
         style={{
           boxSizing: 'border-box',
+          ...(mobileFit
+            ? {
+                width: '800px',
+                maxWidth: 'none',
+                flexShrink: 0,
+                minHeight: 0,
+                transform: `scale(${mobileFit.scale})`,
+                transformOrigin: 'top center',
+                transition: 'none',
+              }
+            : {}),
         }}
       >
         {renderTemplate()}

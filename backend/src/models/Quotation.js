@@ -162,6 +162,48 @@ const customFieldSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const paymentRecordSchema = new mongoose.Schema(
+  {
+    paymentId: {
+      type: String,
+      required: true,
+      default: () => `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    },
+    receiptNumber: {
+      type: String,
+      default: '',
+    },
+    amount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    paymentDate: {
+      type: String,
+      required: true,
+      default: () => new Date().toISOString().split('T')[0],
+    },
+    paymentMode: {
+      type: String,
+      enum: ['UPI', 'Bank Transfer', 'NEFT', 'RTGS', 'IMPS', 'Cash', 'Cheque', 'Credit Card', 'Debit Card', 'Online', 'Other'],
+      default: 'UPI',
+    },
+    referenceNo: {
+      type: String,
+      default: '',
+    },
+    notes: {
+      type: String,
+      default: '',
+    },
+    recordedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const quotationSchema = new mongoose.Schema(
   {
     userId: {
@@ -207,6 +249,26 @@ const quotationSchema = new mongoose.Schema(
       default: '',
     },
     dueDate: {
+      type: String,
+      default: '',
+    },
+    paymentTerms: {
+      type: String,
+      default: 'Due on Receipt',
+    },
+    poNumber: {
+      type: String,
+      default: '',
+    },
+    poDate: {
+      type: String,
+      default: '',
+    },
+    reverseCharge: {
+      type: Boolean,
+      default: false,
+    },
+    eWayBill: {
       type: String,
       default: '',
     },
@@ -379,6 +441,18 @@ const quotationSchema = new mongoose.Schema(
         required: true,
         default: 0,
       },
+      shippingCharges: {
+        type: Number,
+        default: 0,
+      },
+      packagingCharges: {
+        type: Number,
+        default: 0,
+      },
+      roundOff: {
+        type: Number,
+        default: 0,
+      },
       amountInWords: {
         type: String,
         default: '',
@@ -387,6 +461,29 @@ const quotationSchema = new mongoose.Schema(
     },
     taxRows: [taxRowSchema],
     gstSummary: [gstSummaryItemSchema],
+    // Shipping & round off adjustments (top-level aliases)
+    shippingCharges: {
+      type: Number,
+      default: 0,
+    },
+    packagingCharges: {
+      type: Number,
+      default: 0,
+    },
+    roundOff: {
+      type: Number,
+      default: 0,
+    },
+    // Payment ledger & tracking
+    payments: [paymentRecordSchema],
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+    balanceDue: {
+      type: Number,
+      default: 0,
+    },
     termsAndConditions: {
       type: String,
       default: '',
@@ -419,7 +516,7 @@ const quotationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Draft', 'Sent', 'Approved', 'Paid', 'Unpaid', 'Partial', 'Overdue', 'Rejected', 'Expired'],
+      enum: ['Draft', 'Sent', 'Approved', 'Paid', 'Unpaid', 'Partial', 'Overdue', 'Rejected', 'Expired', 'Cancelled'],
       default: 'Draft',
     },
     notes: {

@@ -94,10 +94,15 @@ export const quotationsAPI = {
   create: (data) => api.post('/quotations', data),
   update: (id, data) => api.put(`/quotations/${id}`, data),
   updateStatus: (id, status) => api.patch(`/quotations/${id}/status`, { status }),
+  recordPayment: (id, paymentData) => api.post(`/quotations/${id}/payments`, paymentData),
+  deletePayment: (id, paymentId) => api.delete(`/quotations/${id}/payments/${paymentId}`),
+  getBillingLedger: () => api.get('/quotations/billing/ledger'),
   convertToInvoice: (id) => api.post(`/quotations/${id}/convert-to-invoice`),
   duplicate: (id) => api.post(`/quotations/${id}/duplicate`),
   delete: (id) => api.delete(`/quotations/${id}`),
 };
+
+export const invoicesAPI = quotationsAPI;
 
 // Dashboard Stats API
 export const dashboardAPI = {

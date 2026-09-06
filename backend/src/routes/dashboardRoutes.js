@@ -23,16 +23,22 @@ router.get('/stats', async (req, res) => {
     const totalCustomers = await Customer.countDocuments(userQuery);
     const totalProducts = await Product.countDocuments(userQuery);
 
-    const allDocs = await Quotation.find(userQuery, 'documentType summary.grandTotal status createdAt');
+    const allDocs = await Quotation.find(userQuery, 'documentType summary.grandTotal paidAmount balanceDue status createdAt dueDate');
 
     const totalValue = allDocs.reduce(
       (sum, q) => sum + (q.summary?.grandTotal || 0),
       0
     );
 
-    const invoiceRevenue = allDocs
-      .filter((q) => q.documentType === 'Invoice' && (q.status === 'Paid' || q.status === 'Approved'))
-      .reduce((sum, q) => sum + (q.summary?.grandTotal || 0), 0);
+    const invoices = allDocs.filter((q) => q.documentType === 'Invoice');
+    const totalInvoicedAmount = invoices.reduce((sum, q) => sum + (q.summary?.grandTotal || 0), 0);
+    const totalPaidAmount = invoices.reduce(
+      (sum, q) => sum + (q.paidAmount || (q.status === 'Paid' ? q.summary?.grandTotal : 0) || 0),
+      0
+    );
+    const totalOutstandingAmount = Math.max(0, totalInvoicedAmount - totalPaidAmount);
+
+    const invoiceRevenue = totalPaidAmount;
 
     const statusCounts = {
       Draft: 0,
@@ -43,6 +49,7 @@ router.get('/stats', async (req, res) => {
       Overdue: 0,
       Rejected: 0,
       Expired: 0,
+      Cancelled: 0,
     };
 
     allDocs.forEach((q) => {
@@ -66,6 +73,9 @@ router.get('/stats', async (req, res) => {
         totalProducts,
         totalValue,
         invoiceRevenue,
+        totalInvoicedAmount,
+        totalPaidAmount,
+        totalOutstandingAmount,
         statusCounts,
         recentQuotations: recentDocuments,
         recentDocuments,

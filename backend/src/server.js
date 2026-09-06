@@ -15,6 +15,7 @@ import customerRoutes from './routes/customerRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import quotationRoutes from './routes/quotationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import { seedInitialData } from './seed.js';
 
 dotenv.config();
 
@@ -188,7 +189,8 @@ async function connectDatabase() {
 
 // Start Server
 let server;
-connectDatabase().then(() => {
+connectDatabase().then(async () => {
+  await seedInitialData();
   server = app.listen(PORT, () => {
     console.log(
       `🚀 BillPro Multi-Business SaaS running in [${process.env.NODE_ENV || 'production'}] on port ${PORT}`

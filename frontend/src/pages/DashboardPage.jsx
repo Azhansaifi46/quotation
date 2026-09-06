@@ -76,7 +76,7 @@ export default function DashboardPage({ onToggleMobileSidebar }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => navigate('/create?type=Invoice')}
+            onClick={() => navigate('/invoices/create')}
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition-all active:scale-95"
           >
             <Receipt className="w-3.5 h-3.5" />
@@ -190,7 +190,7 @@ export default function DashboardPage({ onToggleMobileSidebar }) {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/create?type=Invoice')}
+              onClick={() => navigate('/invoices/create')}
               className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-extrabold shadow-md transition-all active:scale-95"
             >
               + Create Invoice

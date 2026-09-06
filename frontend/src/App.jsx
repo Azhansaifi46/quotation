@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import CreateQuotationPage from './pages/CreateQuotationPage';
 import QuotationsListPage from './pages/QuotationsListPage';
 import InvoicesPage from './pages/InvoicesPage';
+import CreateInvoicePage from './pages/CreateInvoicePage';
 import CustomersPage from './pages/CustomersPage';
 import ProductsPage from './pages/ProductsPage';
 import TemplatesPage from './pages/TemplatesPage';
@@ -69,6 +70,8 @@ export default function App() {
             <Route path="create/:id" element={<PageRoute Component={CreateQuotationPage} />} />
             <Route path="quotations" element={<PageRoute Component={QuotationsListPage} />} />
             <Route path="invoices" element={<PageRoute Component={InvoicesPage} />} />
+            <Route path="invoices/create" element={<PageRoute Component={CreateInvoicePage} />} />
+            <Route path="invoices/edit/:id" element={<PageRoute Component={CreateInvoicePage} />} />
             <Route path="customers" element={<PageRoute Component={CustomersPage} />} />
             <Route path="products" element={<PageRoute Component={ProductsPage} />} />
             <Route path="templates" element={<PageRoute Component={TemplatesPage} />} />
